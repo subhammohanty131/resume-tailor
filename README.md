@@ -1,23 +1,22 @@
 # Resume Tailor
 
-A Java console application that tailors a candidate's resume to a
-job description and generates a PDF using a LaTeX template.
+A Java console application that tailors a resume to a job description
+and generates a PDF using a LaTeX template.
 
-It combines deterministic skill matching and project-bullet ranking
+The application combines skill matching and project-bullet ranking
 with optional AI-assisted professional summary rewriting.
 
 ## Features
 
 - Loads candidate information from a UTF-8 properties file.
 - Matches skills using phrase boundaries and common aliases.
-- Prioritizes project bullets by matching skills.
-- Generates LaTeX and compiles it to PDF.
-- Suggests a tailored professional summary using the Gemini API.
-- Tries configured models in order when a model is unavailable.
-- Flags selected unsupported skills, activities, proficiency claims,
-  changed numbers, and removed experience qualifiers.
-- Requires user review before applying an AI suggestion.
-- Offers original-summary generation when AI is unavailable.
+- Prioritizes project bullets based on matched skills.
+- Generates LaTeX and compiles it into a PDF.
+- Uses Gemini to suggest a tailored professional summary.
+- Automatically tries another configured model when one is unavailable.
+- Validates selected unsupported claims and formatting problems.
+- Requires user review before applying an AI summary.
+- Supports original-summary generation when AI is unavailable.
 - Preserves the original candidate properties file.
 
 ## Technology
@@ -37,7 +36,7 @@ with optional AI-assisted professional summary rewriting.
 - MiKTeX with pdflatex available on PATH
 - Internet access and a Gemini API key for AI features
 
-Check your installation:
+Verify your installation:
 
 ```bat
 java -version
@@ -45,56 +44,62 @@ mvn -version
 pdflatex --version
 ```
 
-## Local configuration
+## Project Files
 
-Candidate information is stored in:
+| Path | Purpose |
+|---|---|
+| src/main/java/com/resumetailor | Application source code |
+| src/test/java/com/resumetailor | Automated tests |
+| data/candidate.properties | Local candidate profile |
+| templates/resume-template.tex | LaTeX resume template |
+| output | Generated resumes and compiler logs |
+| pom.xml | Maven configuration |
 
-```text
-data/candidate.properties
-```
-
-The resume template is stored in:
-
-```text
-templates/resume-template.tex
-```
-
-The candidate properties file is local and excluded from Git.
-A fresh checkout requires a compatible candidate profile before running.
+The personal candidate profile and output directory are excluded from Git.
+A fresh checkout requires a compatible local candidate.properties file.
 
 ## Run in Eclipse
 
-Import the project as an existing Maven project.
-
-Use these entry points:
+1. Import the project as an existing Maven project.
+2. Ensure the project uses JDK 25.
+3. Run the appropriate entry point as a Java Application.
+4. Keep the working directory set to the project root.
 
 | Class | Purpose |
 |---|---|
 | Main | Generate a resume without AI rewriting |
-| AiSetupCheck | List models that advertise generation support |
+| AiSetupCheck | List models advertising generateContent support |
 | AiSummaryPreview | Preview and validate an AI summary |
 | AiResumeGenerator | Review a summary and generate a PDF |
 
-Run the selected class as a Java Application from the project root.
+## AI Configuration
 
-For AI entry points, configure the following environment variables in
-that application's Eclipse Run Configuration:
+In Eclipse, open:
+
+Run → Run Configurations → Java Application → selected configuration
+→ Environment
+
+Add:
 
 ```text
 GEMINI_API_KEY=your-api-key
 GEMINI_MODELS=gemini-3.1-flash-lite,gemini-3.8-flash,gemini-3-flash-preview
 ```
 
-GEMINI_MODELS takes priority over GEMINI_MODEL.
-Model availability and quota depend on the account and may change.
+Click Apply, then Run directly from that configuration.
 
+Environment settings belong to each run configuration.
+Configuring one application does not automatically configure another.
+
+GEMINI_MODELS takes priority over GEMINI_MODEL.
+If neither is provided, the client uses its default model list.
+
+Model access and quota can vary by account and change over time.
 Do not commit API keys or Eclipse launch configurations.
 
-## Input
+## Job Description Input
 
-Paste a job description and enter END on a separate line.
-
-Example:
+Paste the job description and enter END on a separate line:
 
 ```text
 Junior QA Automation Engineer
@@ -107,11 +112,40 @@ GitHub Actions regression workflows.
 END
 ```
 
-For AI resume generation, review the suggestion and choose:
+Paste only the job description, without previous console output.
 
-- APPLY: use the suggestion if automated checks passed.
-- ORIGINAL: use the existing summary.
+## Summary Review
+
+The AI flow displays the original summary, suggestion and validation results.
+
+Choose:
+
+- APPLY: use the suggestion when automated checks pass.
+- ORIGINAL: retain the original summary.
 - CANCEL: stop without generating a resume.
+
+Review factual accuracy even when automated checks pass.
+
+## Automatic Model Fallback
+
+Models are tried in the configured order, with up to five models.
+
+Fallback is enabled for:
+
+- HTTP 404, 408 and 429.
+- HTTP 500, 502, 503 and 504.
+- Request timeouts.
+
+The client uses short delays between attempts and an overall
+three-minute deadline.
+
+A long Retry-After requirement stops the attempt instead of immediately
+calling another model.
+
+Authentication errors, invalid requests, blocked responses and invalid
+generated output stop the AI attempt.
+
+When AI generation fails, the review flow still offers ORIGINAL.
 
 ## Output
 
@@ -130,23 +164,7 @@ output/reviewed-resume.pdf
 ```
 
 Subsequent runs overwrite the corresponding output files.
-The source candidate profile is not modified.
-
-## Automatic model fallback
-
-The client tries up to five configured models in order.
-
-Fallback is enabled for HTTP 404, 408, 429, 500, 502, 503 and 504,
-and request timeouts.
-
-Attempts use short delays and an overall three-minute deadline.
-A longer Retry-After requirement stops the attempt instead of making
-another immediate request.
-
-Authentication errors, invalid requests, blocked responses and invalid
-generated output stop the AI attempt.
-
-If all models fail, the application offers original-summary generation.
+The original candidate.properties file is not modified.
 
 ## Testing
 
@@ -165,26 +183,66 @@ Errors: 0
 Skipped: 0
 ```
 
-Tests cover skill matching, content ranking, profile loading,
-LaTeX generation and summary validation.
+Tests cover:
 
-Live checks also verified AI summary application, original-summary
-fallback, PDF compilation and switching after an unavailable model.
+- Skill matching and aliases.
+- Project-bullet ranking.
+- Profile loading.
+- LaTeX generation and escaping.
+- Summary validation.
+
+Live checks verified:
+
+- AI summary generation.
+- Rejection of flagged suggestions.
+- APPLY and ORIGINAL flows.
+- PDF compilation.
+- Automatic switching after an unavailable model.
+
+## Troubleshooting
+
+### GEMINI_API_KEY is missing
+
+Add the key to the environment of the exact run configuration being launched.
+Click Apply and Run directly from that configuration.
+
+### Model unavailable
+
+Check the console for the attempted model and error details.
+Update GEMINI_MODELS using models available to your account.
+
+### PDF compilation fails
+
+Inspect the compiler log in the output directory.
+Confirm pdflatex is available and required LaTeX packages are installed.
+
+### Maven cannot delete target
+
+Close active application and test runs.
+Check for Eclipse or OneDrive file locks.
+
+If needed, remove generated build files from the project directory:
+
+```bat
+rmdir /s /q target
+mvn clean test
+```
 
 ## Limitations
 
 - AI rewriting currently covers the professional summary.
 - Project bullets are ranked, not rewritten by AI.
-- Validation uses heuristic checks and cannot prove factual accuracy.
-- Human review is required even when automated checks pass.
-- One-page layout was verified for the current profile and template;
-  longer content may require layout adjustments.
-- Matching counts describe candidate skills found in the job description,
-  not an ATS score.
-- AI requests send the summary, matching skills and job description.
-  The application does not include candidate contact fields in that request.
-- API requests can consume quota or incur charges according to account settings.
+- Validation is heuristic and cannot prove factual accuracy.
+- Human review remains necessary.
+- One-page layout was verified for the current profile and template.
+  Longer content may require layout changes.
+- Matching counts are not ATS scores.
+- AI requests include the original summary, matched skills and job description.
+  Candidate contact fields are not included by the application.
+- API calls consume quota and may incur charges according to account settings.
 
 ## Author
 
 Subham Mohanty
+
+GitHub: https://github.com/subhammohanty131
