@@ -1,0 +1,30 @@
+# Maven build files
+/target/
+
+# Generated resumes and compiler logs
+/output/
+
+# Local candidate information
+/data/candidate.properties
+
+# API keys and local environment files
+.env
+.env.*
+!.env.example
+*.launch
+
+# Eclipse configuration
+.classpath
+.project
+.settings/
+.metadata/
+
+# Other IDE files
+.idea/
+*.iml
+.vscode/
+
+# Operating system files
+Thumbs.db
+Desktop.ini
+.DS_Store

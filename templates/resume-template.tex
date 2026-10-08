@@ -1,0 +1,48 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[left=0.55in,right=0.55in,top=0.43in,bottom=0.43in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{microtype}
+\input{glyphtounicode}
+\pdfgentounicode=1
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}
+\setlist[itemize]{leftmargin=*,itemsep=0pt,parsep=0pt,topsep=1pt}
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\titlerule]
+\titlespacing*{\section}{0pt}{5pt}{2pt}
+\urlstyle{same}
+\raggedbottom
+
+\begin{document}
+
+\begin{center}
+{\LARGE\bfseries @@NAME@@}\\[3pt]
+{\normalsize @@HEADLINE@@}\\[3pt]
+@@CONTACT@@
+\end{center}
+\vspace{-7pt}
+
+\section*{Professional Summary}
+@@SUMMARY@@
+
+\section*{Technical Skills}
+@@SKILLS@@
+
+\section*{Projects}
+@@PROJECTS@@
+
+\section*{Work Experience}
+@@EXPERIENCE@@
+
+\section*{Education}
+@@EDUCATION@@
+
+\section*{Courses and Workshops}
+@@COURSES@@
+
+\end{document}
