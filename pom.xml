@@ -53,6 +53,18 @@
                 <version>3.5.4</version>
             </plugin>
 
+            <!-- Recreate the base JAR before every shading operation. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.5.0</version>
+
+                <configuration>
+                    <forceCreation>true</forceCreation>
+                </configuration>
+            </plugin>
+
+            <!-- Package runtime dependencies and the application entry point. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
